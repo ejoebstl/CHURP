@@ -1,5 +1,7 @@
 module github.com/bl4ck5un/ChuRP/src
 
+go 1.14
+
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Nik-U/pbc v0.0.0-20181205041846-3e516ca0c5d6

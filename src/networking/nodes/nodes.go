@@ -264,6 +264,7 @@ func (node *Node) Serve(aws bool) {
 	}
 }
 
+// Opt-Share-Reduce 4, 5, 6, 7
 // The function that starts client calls to all other nodes to send the secret shares.
 func (node *Node) ClientSharePhase1() {
 	if *node.iniflag {
@@ -309,6 +310,8 @@ func (node *Node) ClientSharePhase1() {
 	wg.Wait()
 }
 
+
+// Opt-Share-Reduce 9, 10, 11
 // Read from the bulletinboard and does the interpolation and verifiication.
 func (node *Node) ClientReadPhase1() {
 	if *node.iniflag {
@@ -359,6 +362,7 @@ func (node *Node) ClientReadPhase1() {
 	node.ClientSharePhase2()
 }
 
+// Opt-Proactivize, 5 - 13
 // The function that really does the work of generating and sending zero shares.
 func (node *Node) ClientSharePhase2() {
 	// Generate Random Numbers
@@ -375,6 +379,7 @@ func (node *Node) ClientSharePhase2() {
 	node.zeroShares[node.counter-1].Mod(node.zeroShares[node.counter-1], node.p)
 	node.mutex.Lock()
 	node.zeroShare.Add(node.zeroShare, node.zeroShares[node.label-1])
+	// "Round-Robin" for node which publishes.
 	*node.zeroCnt = *node.zeroCnt + 1
 	flag := (*node.zeroCnt == node.counter)
 	node.mutex.Unlock()
@@ -389,6 +394,7 @@ func (node *Node) ClientSharePhase2() {
 
 		poly.SetCoefficientBig(0, node.zeroShare)
 		node.proPoly.ResetTo(poly.DeepCopy())
+		// Trigger next phase via bulletin.
 		node.ClientWritePhase2()
 	}
 	var wg sync.WaitGroup
@@ -424,6 +430,7 @@ func (node *Node) ClientWritePhase2() {
 	node.bClient.WritePhase2(ctx, msg)
 }
 
+// Opt-Proactivize, 15 - 19
 // Read from bulletinboard and does the verification in phase 2.
 func (node *Node) ClientReadPhase2() {
 	log.Printf("[node %d] read bulletinboard in phase 2", node.label)
@@ -478,6 +485,7 @@ func (node *Node) ClientReadPhase2() {
 	node.ClientSharePhase3()
 }
 
+// Opt-ShareDist, 5
 // The function that does the real work of sending new secret shares to all nodes.
 func (node *Node) ClientSharePhase3() {
 	node.newPoly.Add(*node.recPoly, *node.proPoly)
@@ -530,6 +538,7 @@ func (node *Node) ClientWritePhase3() {
 	node.bClient.WritePhase3(ctx, msg)
 }
 
+// Opt-ShareDist 7 - 11
 // Read from the bulletinboard and do the verification in phase 3.
 func (node *Node) ClientReadPhase3() {
 	log.Printf("[node %d] read bulletinboard in phase 3", node.label)
